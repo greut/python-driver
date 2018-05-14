@@ -18,6 +18,72 @@ from cassandra import ProtocolVersion
 from cassandra.protocol import *
 
 
+class ProtocolVersionRegistry(object):
+    """Default implementation of the ProtocolVersionRegistry"""
+
+    _protocol_versions = None
+    """A list of registered protocol versions"""
+
+    _beta_protocol_versions = None
+    """A list of registered beta protocol versions"""
+
+    _supported_versions = None
+
+    def __init__(self, protocol_versions, beta_versions=None):
+        self._protocol_versions = tuple(protocol_versions)
+        self._beta_protocol_versions = tuple(beta_versions or [])
+        self._supported_versions = sorted(self._protocol_versions, reverse=True)
+
+    def supported_versions(self):
+        """
+        Return a tuple of all supported protocol versions.
+        """
+        return self._supported_versions
+
+    def beta_versions(self):
+        """
+        Return a tuple of all beta protocol versions.
+        """
+        return self._beta_protocol_versions
+
+    def min_supported(self):
+        """
+        Return the minimum protocol version supported by this driver.
+        """
+        return min(self.supported_versions())
+
+    def max_supported(self):
+        """
+        Return the maximum protocol version supported by this driver.
+        """
+        return max(self.supported_versions())
+
+    def get_lower_supported(self, previous_version):
+        """
+        Return the lower supported protocol version. Beta versions are omitted.
+        """
+        try:
+            version = next(v for v in sorted(self.supported_versions(), reverse=True) if
+                           not v.is_beta and v < previous_version)
+        except StopIteration:
+            version = None
+
+        return version
+
+    def max_non_beta_supported(self):
+        return max(v for v in self.supported_versions() if v not in self.beta_versions())
+
+    @classmethod
+    def factory(cls, protocol_versions=ProtocolVersion.VERSIONS,
+                beta_versions=ProtocolVersion.BETA_VERSIONS):
+        """"Factory to construct the default protocol version registry
+
+        :param protocol_versions: The object that is defining all available versions.
+        """
+
+        return cls(protocol_versions, beta_versions)
+
+
 class MessageCodecRegistry(object):
     encoders = None
     decoders = None
@@ -52,13 +118,11 @@ class MessageCodecRegistry(object):
         return self._get(self.decoders, protocol_version, opcode)
 
     @classmethod
-    def factory(cls):
+    def factory(cls, protocol_version_registry):
         """Factory to construct the default message codec registry"""
 
         registry = cls()
-        # TODO will be get from the DriverContext protocol version registry later
-        protocol_versions = (ProtocolVersion.V3, ProtocolVersion.V4, ProtocolVersion.V5)
-        for v in protocol_versions:
+        for v in protocol_version_registry.supported_versions():
             for message in [
                 StartupMessage,
                 RegisterMessage,
