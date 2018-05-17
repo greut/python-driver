@@ -21,18 +21,18 @@ from cassandra.protocol import *
 class ProtocolVersionRegistry(object):
     """Default implementation of the ProtocolVersionRegistry"""
 
-    _protocol_versions = None
-    """A list of registered protocol versions"""
+    # default versions and support definition
+    protocol_version = ProtocolVersion
 
     _beta_protocol_versions = None
     """A list of registered beta protocol versions"""
 
     _supported_versions = None
+    """A list of supported protocol versions"""
 
     def __init__(self, protocol_versions, beta_versions=None):
-        self._protocol_versions = tuple(protocol_versions)
+        self._supported_versions = sorted(protocol_versions, reverse=True)
         self._beta_protocol_versions = tuple(beta_versions or [])
-        self._supported_versions = sorted(self._protocol_versions, reverse=True)
 
     def supported_versions(self):
         """
@@ -74,14 +74,14 @@ class ProtocolVersionRegistry(object):
         return max(v for v in self.supported_versions() if v not in self.beta_versions())
 
     @classmethod
-    def factory(cls, protocol_versions=ProtocolVersion.VERSIONS,
-                beta_versions=ProtocolVersion.BETA_VERSIONS):
+    def factory(cls, protocol_versions=None, beta_versions=None):
         """"Factory to construct the default protocol version registry
 
-        :param protocol_versions: The object that is defining all available versions.
+        :param protocol_versions: All protocol versions to register, including beta ones.
+        :param beta_versions: The list of beta versions.
         """
-
-        return cls(protocol_versions, beta_versions)
+        return cls(protocol_versions or cls.protocol_version.VERSIONS,
+                   beta_versions or cls.protocol_version.BETA_VERSIONS)
 
 
 class MessageCodecRegistry(object):
