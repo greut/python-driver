@@ -1588,7 +1588,8 @@ class Cluster(object):
         try:
             connection = self.connection_factory(host.address)
             statements = self._prepared_statements.values()
-            if ProtocolVersion.uses_keyspace_flag(self.protocol_version):
+            if self._context.protocol_version_registry. \
+                    protocol_version.uses_keyspace_flag(self.protocol_version):
                 # V5 protocol and higher, no need to set the keyspace
                 chunks = []
                 for i in range(0, len(statements), 10):
@@ -1889,7 +1890,8 @@ class Session(object):
         else:
             timestamp = None
 
-        has_keyspace_flag = ProtocolVersion.uses_keyspace_flag(self._protocol_version)
+        has_keyspace_flag = self._context.protocol_version_registry. \
+            protocol_version.uses_keyspace_flag(self._protocol_version)
         if isinstance(query, SimpleStatement):
             query_string = query.query_string
             statement_keyspace = query.keyspace if has_keyspace_flag else None
@@ -3458,8 +3460,9 @@ class ResponseFuture(object):
 
                     current_keyspace = self._connection.keyspace
                     prepared_keyspace = prepared_statement.keyspace
-                    has_keyspace_flag = ProtocolVersion.uses_keyspace_flag(
-                        self.session.cluster.protocol_version)
+                    has_keyspace_flag = self._context.protocol_version_registry. \
+                        protocol_version.uses_keyspace_flag(
+                            self.session.cluster.protocol_version)
                     if not has_keyspace_flag \
                             and prepared_keyspace and current_keyspace != prepared_keyspace:
                         self._set_final_exception(

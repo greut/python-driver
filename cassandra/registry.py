@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from functools import partial
 from collections import defaultdict
 
 from cassandra import ProtocolVersion
@@ -88,7 +89,10 @@ class MessageCodecRegistry(object):
     encoders = None
     decoders = None
 
-    def __init__(self):
+    _protocol_version_registry = None
+
+    def __init__(self, protocol_version_registry):
+        self._protocol_version_registry = protocol_version_registry
         self.encoders = defaultdict(dict)
         self.decoders = defaultdict(dict)
 
@@ -106,9 +110,15 @@ class MessageCodecRegistry(object):
                 "protocol version '{1}'".format(opcode, protocol_version))
 
     def add_encoder(self, protocol_version, opcode, encoder):
+        encoder = partial(
+            encoder,
+            protocol_version_registry=self._protocol_version_registry)
         return self._add(self.encoders, protocol_version, opcode, encoder)
 
     def add_decoder(self, protocol_version, opcode, decoder):
+        decoder = partial(
+            decoder,
+            protocol_version_registry=self._protocol_version_registry)
         return self._add(self.decoders, protocol_version, opcode, decoder)
 
     def get_encoder(self, protocol_version, opcode):
@@ -121,7 +131,7 @@ class MessageCodecRegistry(object):
     def factory(cls, protocol_version_registry):
         """Factory to construct the default message codec registry"""
 
-        registry = cls()
+        registry = cls(protocol_version_registry)
         for v in protocol_version_registry.supported_versions():
             for message in [
                 StartupMessage,
