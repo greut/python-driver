@@ -3460,9 +3460,9 @@ class ResponseFuture(object):
 
                     current_keyspace = self._connection.keyspace
                     prepared_keyspace = prepared_statement.keyspace
-                    has_keyspace_flag = self._context.protocol_version_registry. \
-                        protocol_version.uses_keyspace_flag(
-                            self.session.cluster.protocol_version)
+                    has_keyspace_flag = self.session._context. \
+                        protocol_version_registry.protocol_version. \
+                            uses_keyspace_flag(self.session.cluster.protocol_version)
                     if not has_keyspace_flag \
                             and prepared_keyspace and current_keyspace != prepared_keyspace:
                         self._set_final_exception(

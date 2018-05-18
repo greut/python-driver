@@ -178,7 +178,7 @@ class UnavailableErrorMessage(RequestExecutionException):
     error_code = 0x1000
 
     @staticmethod
-    def decode_error_info(f, protocol_version):
+    def decode_error_info(f, protocol_version, **kwargs):
         return {
             'consistency': read_consistency_level(f),
             'required_replicas': read_int(f),
@@ -209,7 +209,7 @@ class WriteTimeoutErrorMessage(RequestExecutionException):
     error_code = 0x1100
 
     @staticmethod
-    def decode_error_info(f, protocol_version):
+    def decode_error_info(f, protocol_version, **kwargs):
         return {
             'consistency': read_consistency_level(f),
             'received_responses': read_int(f),
@@ -226,7 +226,7 @@ class ReadTimeoutErrorMessage(RequestExecutionException):
     error_code = 0x1200
 
     @staticmethod
-    def decode_error_info(f, protocol_version):
+    def decode_error_info(f, protocol_version, **kwargs):
         return {
             'consistency': read_consistency_level(f),
             'received_responses': read_int(f),
@@ -276,7 +276,7 @@ class FunctionFailureMessage(RequestExecutionException):
     error_code = 0x1400
 
     @staticmethod
-    def decode_error_info(f, protocol_version):
+    def decode_error_info(f, protocol_version, **kwargs):
         return {
             'keyspace': read_string(f),
             'function': read_string(f),
@@ -356,7 +356,7 @@ class PreparedQueryNotFound(RequestValidationException):
     error_code = 0x2500
 
     @staticmethod
-    def decode_error_info(f, protocol_version):
+    def decode_error_info(f, protocol_version, **kwargs):
         # return the query ID
         return read_binary_string(f)
 
@@ -366,7 +366,7 @@ class AlreadyExistsException(ConfigurationException):
     error_code = 0x2400
 
     @staticmethod
-    def decode_error_info(f, protocol_version):
+    def decode_error_info(f, protocol_version, **kwargs):
         return {
             'keyspace': read_string(f),
             'table': read_string(f),
