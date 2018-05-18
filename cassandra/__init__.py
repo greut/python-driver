@@ -156,25 +156,25 @@ class ProtocolVersion(object):
     A tuple of all beta protocol versions
     """
 
-    @staticmethod
-    def uses_int_query_flags(protocol_version):
-        return protocol_version >= 5
+    @classmethod
+    def uses_int_query_flags(cls, protocol_version):
+        return protocol_version >= cls.V5
 
-    @staticmethod
-    def uses_prepare_flags(protocol_version):
-        return protocol_version >= 5
+    @classmethod
+    def uses_prepare_flags(cls, protocol_version):
+        return protocol_version >= cls.V5
 
-    @staticmethod
-    def uses_prepared_metadata(protocol_version):
-        return protocol_version >= 5
+    @classmethod
+    def uses_prepared_metadata(cls, protocol_version):
+        return protocol_version >= cls.V5
 
-    @staticmethod
-    def uses_error_code_map(protocol_version):
-        return protocol_version >= 5
+    @classmethod
+    def uses_error_code_map(cls, protocol_version):
+        return protocol_version >= cls.V5
 
-    @staticmethod
-    def uses_keyspace_flag(protocol_version):
-            return protocol_version >= 5
+    @classmethod
+    def uses_keyspace_flag(cls, protocol_version):
+        return protocol_version >= cls.V5
 
 
 class WriteType(object):
